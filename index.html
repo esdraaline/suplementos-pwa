@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Suplementos">
+<meta name="theme-color" content="#2D9E6A">
+<title>Suplementos</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #2D9E6A;
+  --green-light: #E8F7F0;
+  --green-dark: #1A6644;
+  --amber: #E8A020;
+  --amber-light: #FDF3E0;
+  --red: #D94040;
+  --red-light: #FDEAEA;
+  --bg: #F7F5F2;
+  --surface: #FFFFFF;
+  --border: #E8E4DE;
+  --text: #1A1814;
+  --muted: #8A857C;
+  --pill-r: 20px;
+  --safe-top: env(safe-area-inset-top, 44px);
+  --safe-bottom: env(safe-area-inset-bottom, 20px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ── NAV TABS ── */
+.tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding-bottom: var(--safe-bottom);
+  z-index: 100;
+}
+.tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 10px 0 6px; gap: 4px; cursor: pointer;
+  font-size: 11px; color: var(--muted); font-weight: 500;
+  letter-spacing: 0.02em; border: none; background: none;
+  transition: color 0.15s;
+}
+.tab.active { color: var(--green); }
+.tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── PAGES ── */
+.page { display: none; padding-top: calc(var(--safe-top) + 16px); padding-bottom: calc(var(--safe-bottom) + 70px); min-height: 100dvh; }
+.page.active { display: block; }
+
+/* ── HEADER ── */
+.page-header { padding: 0 20px 20px; }
+.page-header h1 { font-family: 'DM Serif Display', serif; font-size: 28px; font-weight: 400; line-height: 1.2; }
+.page-header .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+/* ── ALERT BANNER ── */
+.alert-banner {
+  margin: 0 20px 16px;
+  background: var(--amber-light);
+  border: 1px solid #F0C060;
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+  animation: slideDown 0.3s ease;
+}
+@keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+.alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.alert-body { flex: 1; }
+.alert-title { font-size: 13px; font-weight: 600; color: #8A5F00; margin-bottom: 2px; }
+.alert-items { font-size: 12px; color: #9A6A00; line-height: 1.6; }
+.alert-dismiss { font-size: 18px; color: #B07A10; cursor: pointer; flex-shrink:0; align-self:flex-start; }
+
+/* ── PERIOD SECTIONS ── */
+.period-block { margin: 0 20px 20px; }
+.period-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+}
+.period-dot { width: 6px; height: 6px; border-radius: 50%; }
+.period-dot.dawn { background: #F0A060; }
+.period-dot.lunch { background: var(--green); }
+.period-dot.afternoon { background: #5A8FD4; }
+.period-dot.night { background: #7060C8; }
+
+.items-list { background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+.supp-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.12s; position: relative;
+}
+.supp-item:last-child { border-bottom: none; }
+.supp-item:active { background: #F5F3F0; }
+.supp-item.checked { background: #FAFAF8; }
+.supp-item.checked .supp-name { color: var(--muted); text-decoration: line-through; }
+.check-circle {
+  width: 24px; height: 24px; border-radius: 50%; flex-shrink:0;
+  border: 2px solid var(--border); display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; background: transparent;
+}
+.supp-item.checked .check-circle { background: var(--green); border-color: var(--green); }
+.check-circle svg { width: 13px; height: 13px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity 0.15s; }
+.supp-item.checked .check-circle svg { opacity: 1; }
+.supp-name { font-size: 15px; font-weight: 400; color: var(--text); flex: 1; }
+
+/* ── PROGRESS RING ── */
+.progress-wrap { display: flex; justify-content: center; align-items: center; padding: 0 20px 20px; gap: 24px; }
+.ring-container { position: relative; width: 88px; height: 88px; }
+.ring-bg { stroke: var(--border); fill: none; }
+.ring-fill { fill: none; stroke: var(--green); stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; transform: rotate(-90deg); transform-origin: 50% 50%; }
+.ring-text { position: absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.ring-pct { font-size: 20px; font-weight: 600; color: var(--text); }
+.ring-label { font-size: 10px; color: var(--muted); letter-spacing: 0.04em; }
+.progress-stats { display: flex; flex-direction: column; gap: 6px; }
+.stat-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.stat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink:0; }
+.stat-dot.pending { background: var(--border); }
+.stat-count { font-weight: 600; color: var(--text); min-width: 20px; }
+.stat-desc { color: var(--muted); }
+
+/* ── CALENDAR PAGE ── */
+.calendar-wrap { padding: 0 20px 20px; }
+.month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.month-nav h2 { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; }
+.month-nav button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; display:flex; align-items:center; justify-content:center; font-size: 16px; }
+.weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; }
+.weekday { text-align: center; font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; padding: 4px 0; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-day {
+  aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px; font-size: 13px; font-weight: 500;
+  background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+  position: relative;
+}
+.cal-day.today { border-color: var(--green); color: var(--text); font-weight: 600; }
+.cal-day.complete { background: var(--green); border-color: var(--green); color: white; }
+.cal-day.partial { background: var(--amber-light); border-color: #F0C060; color: #8A5F00; }
+.cal-day.missed { background: var(--red-light); border-color: #F0A0A0; color: var(--red); }
+.cal-day.empty { background: transparent; border-color: transparent; }
+.cal-day.future { background: var(--bg); border-color: transparent; color: #C8C4BE; }
+.cal-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.legend-swatch { width: 12px; height: 12px; border-radius: 4px; }
+.legend-swatch.complete { background: var(--green); }
+.legend-swatch.partial { background: #F0C060; }
+.legend-swatch.missed { background: #F0A0A0; }
+.legend-swatch.future { background: var(--border); }
+
+/* ── STATS PAGE ── */
+.stats-month-title { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; padding: 0 20px 16px; }
+.summary-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px 20px; }
+.s-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
+.s-card .s-num { font-size: 28px; font-weight: 600; color: var(--text); line-height: 1; }
+.s-card .s-lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.s-card.green { background: var(--green-light); border-color: #A0DFC0; }
+.s-card.green .s-num { color: var(--green-dark); }
+.supp-table { margin: 0 20px 20px; background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+.table-header { display: grid; grid-template-columns: 1fr auto; padding: 10px 16px; background: #F5F3F0; border-bottom: 1px solid var(--border); }
+.table-header span { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--muted); text-transform: uppercase; }
+.table-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.table-row:last-child { border-bottom: none; }
+.t-name { font-size: 14px; color: var(--text); }
+.t-period { font-size: 11px; color: var(--muted); }
+.t-bar-wrap { width: 60px; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.t-bar { height: 100%; background: var(--green); border-radius: 99px; }
+.t-count { font-size: 14px; font-weight: 600; color: var(--text); min-width: 28px; text-align: right; }
+</style>
+</head>
+<body>
+
+<!-- PAGE: HOJE -->
+<div class="page active" id="page-hoje">
+  <div class="page-header">
+    <h1 id="hoje-title">Hoje</h1>
+    <div class="sub" id="hoje-date"></div>
+  </div>
+  <div id="alert-container"></div>
+  <div class="progress-wrap">
+    <div class="ring-container">
+      <svg viewBox="0 0 88 88" width="88" height="88">
+        <circle class="ring-bg" cx="44" cy="44" r="38" stroke-width="7"/>
+        <circle class="ring-fill" id="ring-fill" cx="44" cy="44" r="38" stroke-width="7"
+          stroke-dasharray="238.76" stroke-dashoffset="238.76"/>
+      </svg>
+      <div class="ring-text">
+        <span class="ring-pct" id="ring-pct">0%</span>
+        <span class="ring-label">HOJE</span>
+      </div>
+    </div>
+    <div class="progress-stats">
+      <div class="stat-row"><div class="stat-dot"></div><span class="stat-count" id="stat-done">0</span><span class="stat-desc">tomados</span></div>
+      <div class="stat-row"><div class="stat-dot pending"></div><span class="stat-count" id="stat-left">0</span><span class="stat-desc">restantes</span></div>
+    </div>
+  </div>
+
+  <div class="period-block">
+    <div class="period-label"><div class="period-dot dawn"></div>Ao acordar</div>
+    <div class="items-list" id="list-ao-acordar"></div>
+  </div>
+  <div class="period-block">
+    <div class="period-label"><div class="period-dot lunch"></div>Almoço</div>
+    <div class="items-list" id="list-almoco"></div>
+  </div>
+  <div class="period-block">
+    <div class="period-label"><div class="period-dot afternoon"></div>Meio da tarde</div>
+    <div class="items-list" id="list-tarde"></div>
+  </div>
+  <div class="period-block">
+    <div class="period-label"><div class="period-dot night"></div>Noite</div>
+    <div class="items-list" id="list-noite"></div>
+  </div>
+</div>
+
+<!-- PAGE: CALENDÁRIO -->
+<div class="page" id="page-cal">
+  <div class="page-header">
+    <h1>Calendário</h1>
+    <div class="sub">Seu histórico mensal</div>
+  </div>
+  <div class="calendar-wrap">
+    <div class="month-nav">
+      <button onclick="calPrev()">‹</button>
+      <h2 id="cal-month-title"></h2>
+      <button onclick="calNext()">›</button>
+    </div>
+    <div class="weekdays">
+      <div class="weekday">DOM</div><div class="weekday">SEG</div><div class="weekday">TER</div>
+      <div class="weekday">QUA</div><div class="weekday">QUI</div><div class="weekday">SEX</div>
+      <div class="weekday">SÁB</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-legend">
+      <div class="legend-item"><div class="legend-swatch complete"></div>Tudo tomado</div>
+      <div class="legend-item"><div class="legend-swatch partial"></div>Parcial</div>
+      <div class="legend-item"><div class="legend-swatch missed"></div>Nenhum</div>
+      <div class="legend-item"><div class="legend-swatch future"></div>Futuro</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: ESTATÍSTICAS -->
+<div class="page" id="page-stats">
+  <div class="page-header">
+    <h1>Estatísticas</h1>
+    <div class="sub" id="stats-sub"></div>
+  </div>
+  <div class="summary-cards">
+    <div class="s-card green">
+      <div class="s-num" id="stat-days-ok">0</div>
+      <div class="s-lbl">Dias completos</div>
+    </div>
+    <div class="s-card">
+      <div class="s-num" id="stat-total-pills">0</div>
+      <div class="s-lbl">Comprimidos no mês</div>
+    </div>
+    <div class="s-card">
+      <div class="s-num" id="stat-streak">0</div>
+      <div class="s-lbl">Sequência atual</div>
+    </div>
+    <div class="s-card">
+      <div class="s-num" id="stat-pct-month">0%</div>
+      <div class="s-lbl">Taxa do mês</div>
+    </div>
+  </div>
+  <div class="supp-table">
+    <div class="table-header">
+      <span>Suplemento</span>
+      <span style="text-align:right">Doses / dias</span>
+    </div>
+    <div id="stats-table-body"></div>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<nav class="tab-bar">
+  <button class="tab active" onclick="showPage('hoje',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    Hoje
+  </button>
+  <button class="tab" onclick="showPage('cal',this)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    Calendário
+  </button>
+  <button class="tab" onclick="showPage('stats',this)">
+    <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+    Estatísticas
+  </button>
+</nav>
+
+<script>
+const PERIODS = [
+  { id: "ao-acordar", label: "Ao acordar", items: ["Bromelina"] },
+  { id: "almoco",    label: "Almoço",      items: ["TWK10","Okralin","Mesoporosil","PQQ","Biotina"] },
+  { id: "tarde",     label: "Meio da tarde",items: ["Ferro","Vit C","Lactoferrina","Betacaroteno"] },
+  { id: "noite",     label: "Noite",        items: ["Collagenew","Vitamina C revestida"] }
+];
+const ALL_ITEMS = PERIODS.flatMap(p => p.items.map(name => ({ period: p.id, name })));
+const TOTAL = ALL_ITEMS.length;
+const STORAGE_KEY = "supp_app_v2";
+const MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const PERIOD_LABEL = { "ao-acordar":"Acordar","almoco":"Almoço","tarde":"Tarde","noite":"Noite" };
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function monthKey(y, m) { return `${y}-${String(m+1).padStart(2,'0')}`; }
+
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; }
+}
+function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+let DB = loadData();
+let calViewYear = new Date().getFullYear();
+let calViewMonth = new Date().getMonth();
+
+function getDayRecord(dateStr) {
+  return DB[dateStr] || {};
+}
+function toggleItem(dateStr, itemKey) {
+  if (!DB[dateStr]) DB[dateStr] = {};
+  DB[dateStr][itemKey] = !DB[dateStr][itemKey];
+  saveData(DB);
+  renderHoje();
+  renderStats();
+}
+function itemKey(periodId, name) { return `${periodId}::${name}`; }
+
+// ── RENDER HOJE ──
+function renderHoje() {
+  const today = todayStr();
+  const rec = getDayRecord(today);
+  const d = new Date();
+  const dateStr = d.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  document.getElementById("hoje-date").textContent = dateStr.charAt(0).toUpperCase()+dateStr.slice(1);
+  document.getElementById("hoje-title").textContent = "Hoje";
+
+  let done = 0;
+  PERIODS.forEach(p => {
+    const list = document.getElementById(`list-${p.id}`);
+    list.innerHTML = "";
+    p.items.forEach(name => {
+      const k = itemKey(p.id, name);
+      const checked = !!rec[k];
+      if (checked) done++;
+      const el = document.createElement("div");
+      el.className = "supp-item" + (checked ? " checked" : "");
+      el.innerHTML = `
+        <div class="check-circle">
+          <svg viewBox="0 0 14 14"><polyline points="2,7 5.5,10.5 12,3"/></svg>
+        </div>
+        <span class="supp-name">${name}</span>`;
+      el.onclick = () => toggleItem(today, k);
+      list.appendChild(el);
+    });
+  });
+
+  const pct = Math.round(done / TOTAL * 100);
+  const circ = 238.76;
+  document.getElementById("ring-pct").textContent = pct + "%";
+  document.getElementById("ring-fill").style.strokeDashoffset = circ - (circ * pct / 100);
+  document.getElementById("stat-done").textContent = done;
+  document.getElementById("stat-left").textContent = TOTAL - done;
+
+  renderAlert(rec, today);
+}
+
+function renderAlert(todayRec, todayStr) {
+  const container = document.getElementById("alert-container");
+  container.innerHTML = "";
+
+  // find yesterday
+  const yd = new Date(); yd.setDate(yd.getDate()-1);
+  const yStr = `${yd.getFullYear()}-${String(yd.getMonth()+1).padStart(2,'0')}-${String(yd.getDate()).padStart(2,'0')}`;
+  const yrec = DB[yStr] || {};
+
+  // only alert if user actually used the app yesterday (at least 1 item checked)
+  const yesterdayUsed = ALL_ITEMS.some(i => !!yrec[itemKey(i.period, i.name)]);
+  if (!yesterdayUsed) return;
+
+  const missed = ALL_ITEMS.filter(i => !yrec[itemKey(i.period, i.name)]).map(i => i.name);
+  if (missed.length === 0) return;
+  const dismissKey = "dismiss_" + yStr;
+  if (DB[dismissKey]) return;
+
+  const banner = document.createElement("div");
+  banner.className = "alert-banner";
+  banner.innerHTML = `
+    <span class="alert-icon">⚠️</span>
+    <div class="alert-body">
+      <div class="alert-title">Ontem ficaram ${missed.length} item${missed.length>1?"s":""} sem tomar</div>
+      <div class="alert-items">${missed.join(", ")}</div>
+    </div>
+    <span class="alert-dismiss" onclick="dismissAlert('${yStr}')">✕</span>`;
+  container.appendChild(banner);
+}
+
+function dismissAlert(yStr) {
+  DB["dismiss_" + yStr] = true;
+  saveData(DB);
+  renderHoje();
+}
+
+// ── CALENDAR ──
+function renderCal() {
+  const y = calViewYear, m = calViewMonth;
+  document.getElementById("cal-month-title").textContent = `${MONTHS_PT[m]} ${y}`;
+  const grid = document.getElementById("cal-grid");
+  grid.innerHTML = "";
+  const today = todayStr();
+  const todayDate = new Date();
+  const firstDay = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    const e = document.createElement("div"); e.className = "cal-day empty"; grid.appendChild(e);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const el = document.createElement("div");
+    const cellDate = new Date(y, m, d);
+    if (cellDate > todayDate) {
+      el.className = "cal-day future";
+      el.innerHTML = `<span>${d}</span>`;
+    } else {
+      const rec = DB[ds] || {};
+      const anyChecked = ALL_ITEMS.some(i => !!rec[itemKey(i.period, i.name)]);
+      const checked = ALL_ITEMS.filter(i => !!rec[itemKey(i.period, i.name)]).length;
+      let cls = "cal-day";
+      if (ds === today) cls += " today";
+      if (checked === TOTAL) cls += " complete";
+      else if (checked > 0) cls += " partial";
+      else if (ds < today && anyChecked) cls += " missed";
+      el.className = cls;
+      el.innerHTML = `<span>${d}</span>${ds !== today ? '<div class="cal-dot"></div>' : ''}`;
+    }
+    grid.appendChild(el);
+  }
+}
+function calPrev() {
+  calViewMonth--;
+  if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
+  renderCal();
+}
+function calNext() {
+  calViewMonth++;
+  if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
+  renderCal();
+}
+
+// ── STATS ──
+function renderStats() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const mStr = monthKey(y, m);
+  document.getElementById("stats-sub").textContent = `${MONTHS_PT[m]} ${y}`;
+
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const todayN = now.getDate();
+  let daysComplete = 0, totalPills = 0, streak = 0;
+  let countMap = {};
+  ALL_ITEMS.forEach(i => { countMap[i.name] = 0; });
+
+  // find first day of use this month
+  let firstUseDay = null;
+  for (let d = 1; d <= todayN; d++) {
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const rec = DB[ds] || {};
+    if (ALL_ITEMS.some(i => !!rec[itemKey(i.period, i.name)])) { firstUseDay = d; break; }
+  }
+  const startDay = firstUseDay || todayN;
+
+  for (let d = startDay; d <= todayN; d++) {
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const rec = DB[ds] || {};
+    let dayPills = 0;
+    ALL_ITEMS.forEach(i => {
+      if (rec[itemKey(i.period, i.name)]) { dayPills++; countMap[i.name]++; }
+    });
+    totalPills += dayPills;
+    if (dayPills === TOTAL) { daysComplete++; streak++; }
+    else streak = 0;
+  }
+  const activeDays = todayN - startDay + 1;
+  const possiblePills = activeDays * TOTAL;
+  const pctMonth = possiblePills > 0 ? Math.round(totalPills / possiblePills * 100) : 0;
+
+  document.getElementById("stat-days-ok").textContent = daysComplete;
+  document.getElementById("stat-total-pills").textContent = totalPills;
+  document.getElementById("stat-streak").textContent = streak;
+  document.getElementById("stat-pct-month").textContent = pctMonth + "%";
+
+  const tbody = document.getElementById("stats-table-body");
+  tbody.innerHTML = "";
+  ALL_ITEMS.forEach(i => {
+    const cnt = countMap[i.name];
+    const pct = activeDays > 0 ? Math.round(cnt / activeDays * 100) : 0;
+    const row = document.createElement("div");
+    row.className = "table-row";
+    row.innerHTML = `
+      <div>
+        <div class="t-name">${i.name}</div>
+        <div class="t-period">${PERIOD_LABEL[i.period]}</div>
+      </div>
+      <div class="t-bar-wrap"><div class="t-bar" style="width:${pct}%"></div></div>
+      <div class="t-count">${cnt}<span style="font-size:11px;color:var(--muted);font-weight:400">/${activeDays}</span></div>`;
+    tbody.appendChild(row);
+  });
+}
+
+// ── NAVIGATION ──
+function showPage(id, btn) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("page-" + id).classList.add("active");
+  btn.classList.add("active");
+  if (id === "cal") renderCal();
+  if (id === "stats") renderStats();
+}
+
+// ── INIT ──
+renderHoje();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+}
+</script>
+</body>
+</html>
