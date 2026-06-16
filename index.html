@@ -44,21 +44,26 @@ body {
 .tab-bar {
   position: fixed; bottom: 0; left: 0; right: 0;
   background: var(--surface);
-  border-top: 1px solid var(--border);
   display: flex;
   padding-bottom: var(--safe-bottom);
   z-index: 100;
 }
 .tab {
   flex: 1; display: flex; flex-direction: column; align-items: center;
-  padding: 10px 0 6px; gap: 4px; cursor: pointer;
+  padding: 7px 0 6px; gap: 4px; cursor: pointer;
   font-size: 11px; color: var(--muted); font-weight: 500;
   letter-spacing: 0.02em; border: none; background: none;
-  transition: color 0.15s;
+  transition: all 0.15s;
   user-select: none; -webkit-user-select: none;
+  border-top: 3px solid transparent;
 }
-.tab.active { color: var(--green); }
+.tab.active {
+  color: var(--green);
+  border-top: 3px solid var(--green);
+  background: #FFFFFF;
+}
 .tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tab.active svg { stroke-width: 2.2; }
 
 /* ── PAGES ── */
 .page { display: none; padding-top: calc(var(--safe-top) + 16px); padding-bottom: calc(var(--safe-bottom) + 70px); min-height: 100dvh; }
@@ -66,6 +71,10 @@ body {
 
 /* ── HEADER ── */
 .page-header { padding: 0 20px 20px; }
+#page-hoje .page-header {
+  background: linear-gradient(180deg, #E8F4EE 0%, transparent 100%);
+  padding-bottom: 24px;
+}
 .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 28px; font-weight: 400; line-height: 1.2; }
 .page-header .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
@@ -87,7 +96,16 @@ body {
 .alert-dismiss { font-size: 18px; color: #B07A10; cursor: pointer; flex-shrink:0; align-self:flex-start; }
 
 /* ── PERIOD SECTIONS ── */
-.period-block { margin: 0 20px 20px; }
+.period-block {
+  margin: 0 20px 20px;
+  border-radius: 16px;
+  padding: 12px;
+}
+.period-block.block-ao-acordar { background: #FFF8F3; }
+.period-block.block-almoco { background: #F3FBF7; }
+.period-block.block-tarde { background: #F3F7FF; }
+.period-block.block-noite { background: #F7F3FF; }
+
 .period-label {
   font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--muted);
@@ -99,7 +117,7 @@ body {
 .period-dot.afternoon { background: #5A8FD4; }
 .period-dot.night { background: #7060C8; }
 
-.items-list { background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+.items-list { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
 .supp-item {
   display: flex; align-items: center; gap: 14px;
   padding: 14px 16px;
@@ -110,7 +128,7 @@ body {
 .supp-item:last-child { border-bottom: none; }
 .supp-item:active { background: #F5F3F0; }
 .supp-item.checked { background: #FAFAF8; }
-.supp-item.checked .supp-name { color: var(--muted); text-decoration: line-through; }
+.supp-item.checked .supp-name { text-decoration: line-through; opacity: 0.45; }
 .check-circle {
   width: 24px; height: 24px; border-radius: 50%; flex-shrink:0;
   border: 2px solid var(--border); display: flex; align-items: center; justify-content: center;
@@ -119,7 +137,39 @@ body {
 .supp-item.checked .check-circle { background: var(--green); border-color: var(--green); }
 .check-circle svg { width: 13px; height: 13px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity 0.15s; }
 .supp-item.checked .check-circle svg { opacity: 1; }
-.supp-name { font-size: 15px; font-weight: 400; color: var(--text); flex: 1; }
+.supp-name { font-size: 16px; font-weight: 500; color: var(--text); flex: 1; }
+
+/* ── CATEGORY CHIP & EMOJI ── */
+.emoji-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+.category-chip {
+  border-radius: 99px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes popCheck {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.check-circle.popping {
+  animation: popCheck 0.25s ease-out;
+}
 
 /* ── PROGRESS RING ── */
 .progress-wrap { display: flex; justify-content: center; align-items: center; padding: 0 20px 20px; gap: 24px; }
@@ -129,6 +179,7 @@ body {
 .ring-text { position: absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
 .ring-pct { font-size: 20px; font-weight: 600; color: var(--text); }
 .ring-label { font-size: 10px; color: var(--muted); letter-spacing: 0.04em; }
+.ring-celebrate { font-size: 14px; line-height: 1; margin-top: 1px; }
 .progress-stats { display: flex; flex-direction: column; gap: 6px; }
 .stat-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .stat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink:0; }
@@ -197,6 +248,12 @@ body {
   <div class="progress-wrap">
     <div class="ring-container">
       <svg viewBox="0 0 88 88" width="88" height="88">
+        <defs>
+          <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#F7C52B" />
+            <stop offset="100%" stop-color="#FFB347" />
+          </linearGradient>
+        </defs>
         <circle class="ring-bg" cx="44" cy="44" r="38" stroke-width="7"/>
         <circle class="ring-fill" id="ring-fill" cx="44" cy="44" r="38" stroke-width="7"
           stroke-dasharray="238.76" stroke-dashoffset="238.76"/>
@@ -204,6 +261,7 @@ body {
       <div class="ring-text">
         <span class="ring-pct" id="ring-pct">0%</span>
         <span class="ring-label">HOJE</span>
+        <span class="ring-celebrate" id="ring-celebrate" style="display: none;">🎉</span>
       </div>
     </div>
     <div class="progress-stats">
@@ -212,19 +270,19 @@ body {
     </div>
   </div>
 
-  <div class="period-block">
+  <div class="period-block block-ao-acordar">
     <div class="period-label"><div class="period-dot dawn"></div>Ao acordar</div>
     <div class="items-list" id="list-ao-acordar"></div>
   </div>
-  <div class="period-block">
+  <div class="period-block block-almoco">
     <div class="period-label"><div class="period-dot lunch"></div>Almoço</div>
     <div class="items-list" id="list-almoco"></div>
   </div>
-  <div class="period-block">
+  <div class="period-block block-tarde">
     <div class="period-label"><div class="period-dot afternoon"></div>Meio da tarde</div>
     <div class="items-list" id="list-tarde"></div>
   </div>
-  <div class="period-block">
+  <div class="period-block block-noite">
     <div class="period-label"><div class="period-dot night"></div>Noite</div>
     <div class="items-list" id="list-noite"></div>
   </div>
@@ -318,6 +376,20 @@ const TOTAL = ALL_ITEMS.length;
 const STORAGE_KEY = "supp_app_v2";
 const MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 const PERIOD_LABEL = { "ao-acordar":"Acordar","almoco":"Almoço","tarde":"Tarde","noite":"Noite" };
+const SUPP_META = {
+  "Bromelina": { category: "Enzima", color: "#FF8C69", emoji: "🍍" },
+  "TWK10": { category: "Microbiota", color: "#7C5CBF", emoji: "🦠" },
+  "Okralin": { category: "Glicose", color: "#2ECC8E", emoji: "🌿" },
+  "Mesoporosil": { category: "Digestão", color: "#5A9EF0", emoji: "💧" },
+  "PQQ": { category: "Energia", color: "#FFB347", emoji: "⚡" },
+  "Biotina": { category: "Cabelo", color: "#FF6B9D", emoji: "💇" },
+  "Ferro": { category: "Mineral", color: "#E05A4A", emoji: "🔴" },
+  "Vit C": { category: "Imunidade", color: "#F7C52B", emoji: "🍋" },
+  "Lactoferrina": { category: "Imunidade", color: "#F7C52B", emoji: "🥛" },
+  "Betacaroteno": { category: "Antioxid.", color: "#FF9500", emoji: "🥕" },
+  "Collagenew": { category: "Colágeno", color: "#D4A0FF", emoji: "✨" },
+  "Vitamina C revestida": { category: "Imunidade", color: "#F7C52B", emoji: "🛡️" }
+};
 
 function todayStr() {
   const d = new Date();
@@ -337,12 +409,22 @@ let calViewMonth = new Date().getMonth();
 function getDayRecord(dateStr) {
   return DB[dateStr] || {};
 }
+
+let lastClickedKey = null;
 function toggleItem(dateStr, itemKey) {
   if (!DB[dateStr]) DB[dateStr] = {};
   DB[dateStr][itemKey] = !DB[dateStr][itemKey];
   saveData(DB);
+  
+  lastClickedKey = itemKey;
   renderHoje();
   renderStats();
+  
+  setTimeout(() => {
+    const el = document.querySelector(`[data-key="${itemKey}"] .check-circle`);
+    if (el) el.classList.remove("popping");
+    if (lastClickedKey === itemKey) lastClickedKey = null;
+  }, 300);
 }
 function itemKey(periodId, name) { return `${periodId}::${name}`; }
 
@@ -353,7 +435,16 @@ function renderHoje() {
   const d = new Date();
   const dateStr = d.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
   document.getElementById("hoje-date").textContent = dateStr.charAt(0).toUpperCase()+dateStr.slice(1);
-  document.getElementById("hoje-title").textContent = "Hoje";
+  
+  // Saudação contextual baseada na hora
+  const hour = d.getHours();
+  let greeting = "Boa noite! 🌙";
+  if (hour >= 5 && hour < 12) {
+    greeting = "Bom dia! ☀️";
+  } else if (hour >= 12 && hour < 18) {
+    greeting = "Boa tarde! 🌤️";
+  }
+  document.getElementById("hoje-title").textContent = greeting;
 
   let done = 0;
   PERIODS.forEach(p => {
@@ -363,13 +454,22 @@ function renderHoje() {
       const k = itemKey(p.id, name);
       const checked = !!rec[k];
       if (checked) done++;
+      
+      const meta = SUPP_META[name] || { category: "", color: "#8A857C", emoji: "💊" };
       const el = document.createElement("div");
       el.className = "supp-item" + (checked ? " checked" : "");
+      el.setAttribute("data-key", k);
+      
+      const isPopping = k === lastClickedKey;
+      
       el.innerHTML = `
-        <div class="check-circle">
+        <div class="emoji-badge" style="background: ${meta.color}1e;">${meta.emoji}</div>
+        <div class="check-circle${isPopping ? " popping" : ""}">
           <svg viewBox="0 0 14 14"><polyline points="2,7 5.5,10.5 12,3"/></svg>
         </div>
-        <span class="supp-name">${name}</span>`;
+        <span class="supp-name">${name}</span>
+        <span class="category-chip" style="background: ${meta.color}2e; color: ${meta.color};">${meta.category}</span>
+      `;
       el.onclick = () => toggleItem(today, k);
       list.appendChild(el);
     });
@@ -378,7 +478,19 @@ function renderHoje() {
   const pct = Math.round(done / TOTAL * 100);
   const circ = 238.76;
   document.getElementById("ring-pct").textContent = pct + "%";
-  document.getElementById("ring-fill").style.strokeDashoffset = circ - (circ * pct / 100);
+  
+  const ringFill = document.getElementById("ring-fill");
+  ringFill.style.strokeDashoffset = circ - (circ * pct / 100);
+  
+  const celebrate = document.getElementById("ring-celebrate");
+  if (pct === 100) {
+    ringFill.style.stroke = "url(#goldGradient)";
+    celebrate.style.display = "block";
+  } else {
+    ringFill.style.stroke = "";
+    celebrate.style.display = "none";
+  }
+  
   document.getElementById("stat-done").textContent = done;
   document.getElementById("stat-left").textContent = TOTAL - done;
 
