@@ -77,6 +77,7 @@ body {
 }
 .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 28px; font-weight: 400; line-height: 1.2; }
 .page-header .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.streak-badge { font-size: 13px; font-weight: 600; color: #E8730A; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
 
 /* ── ALERT BANNER ── */
 .alert-banner {
@@ -227,7 +228,7 @@ body {
 .supp-table { margin: 0 20px 20px; background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
 .table-header { display: grid; grid-template-columns: 1fr auto; padding: 10px 16px; background: #F5F3F0; border-bottom: 1px solid var(--border); }
 .table-header span { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--muted); text-transform: uppercase; }
-.table-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.table-row { display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
 .table-row:last-child { border-bottom: none; }
 .t-name { font-size: 14px; color: var(--text); }
 .t-period { font-size: 11px; color: var(--muted); }
@@ -243,6 +244,7 @@ body {
   <div class="page-header">
     <h1 id="hoje-title">Hoje</h1>
     <div class="sub" id="hoje-date"></div>
+    <div class="streak-badge" id="streak-badge" style="display:none;">🔥 <span id="streak-count">0</span> dia<span id="streak-plural"></span> seguido<span id="streak-plural2"></span></div>
   </div>
   <div id="alert-container"></div>
   <div class="progress-wrap">
@@ -411,9 +413,28 @@ function getDayRecord(dateStr) {
 }
 
 let lastClickedKey = null;
+function playTick() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.15);
+  } catch(e) { /* silent fail em navegadores sem suporte */ }
+}
+
 function toggleItem(dateStr, itemKey) {
   if (!DB[dateStr]) DB[dateStr] = {};
-  DB[dateStr][itemKey] = !DB[dateStr][itemKey];
+  const newState = !DB[dateStr][itemKey];
+  DB[dateStr][itemKey] = newState;
+  if (newState) playTick();
   saveData(DB);
   
   lastClickedKey = itemKey;
@@ -428,6 +449,34 @@ function toggleItem(dateStr, itemKey) {
 }
 function itemKey(periodId, name) { return `${periodId}::${name}`; }
 
+function calcStreak() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const todayN = now.getDate();
+  let streak = 0;
+
+  // find first day of use this month
+  let firstUseDay = null;
+  for (let d = 1; d <= todayN; d++) {
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const rec = DB[ds] || {};
+    if (ALL_ITEMS.some(i => !!rec[itemKey(i.period, i.name)])) { firstUseDay = d; break; }
+  }
+  const startDay = firstUseDay || todayN;
+
+  for (let d = startDay; d <= todayN; d++) {
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const rec = DB[ds] || {};
+    let dayPills = 0;
+    ALL_ITEMS.forEach(i => {
+      if (rec[itemKey(i.period, i.name)]) { dayPills++; }
+    });
+    if (dayPills === TOTAL) { streak++; }
+    else streak = 0;
+  }
+  return streak;
+}
+
 // ── RENDER HOJE ──
 function renderHoje() {
   const today = todayStr();
@@ -435,6 +484,17 @@ function renderHoje() {
   const d = new Date();
   const dateStr = d.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
   document.getElementById("hoje-date").textContent = dateStr.charAt(0).toUpperCase()+dateStr.slice(1);
+  
+  const streak = calcStreak();
+  const badge = document.getElementById("streak-badge");
+  if (streak >= 2) {
+    badge.style.display = "flex";
+    document.getElementById("streak-count").textContent = streak;
+    document.getElementById("streak-plural").textContent = streak > 1 ? "s" : "";
+    document.getElementById("streak-plural2").textContent = streak > 1 ? "s" : "";
+  } else {
+    badge.style.display = "none";
+  }
   
   // Saudação contextual baseada na hora
   const hour = d.getHours();
@@ -589,7 +649,7 @@ function renderStats() {
 
   const daysInMonth = new Date(y, m+1, 0).getDate();
   const todayN = now.getDate();
-  let daysComplete = 0, totalPills = 0, streak = 0;
+  let daysComplete = 0, totalPills = 0;
   let countMap = {};
   ALL_ITEMS.forEach(i => { countMap[i.name] = 0; });
 
@@ -610,9 +670,9 @@ function renderStats() {
       if (rec[itemKey(i.period, i.name)]) { dayPills++; countMap[i.name]++; }
     });
     totalPills += dayPills;
-    if (dayPills === TOTAL) { daysComplete++; streak++; }
-    else streak = 0;
+    if (dayPills === TOTAL) { daysComplete++; }
   }
+  const streak = calcStreak();
   const activeDays = todayN - startDay + 1;
   const possiblePills = activeDays * TOTAL;
   const pctMonth = possiblePills > 0 ? Math.round(totalPills / possiblePills * 100) : 0;
@@ -629,10 +689,14 @@ function renderStats() {
     const pct = activeDays > 0 ? Math.round(cnt / activeDays * 100) : 0;
     const row = document.createElement("div");
     row.className = "table-row";
+    const meta = SUPP_META[i.name] || { category: "", color: "#8A857C", emoji: "💊" };
     row.innerHTML = `
-      <div>
-        <div class="t-name">${i.name}</div>
-        <div class="t-period">${PERIOD_LABEL[i.period]}</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="emoji-badge" style="width:26px;height:26px;font-size:14px;background:${meta.color}1e;">${meta.emoji}</div>
+        <div>
+          <div class="t-name">${i.name}</div>
+          <div class="t-period">${PERIOD_LABEL[i.period]}</div>
+        </div>
       </div>
       <div class="t-bar-wrap"><div class="t-bar" style="width:${pct}%"></div></div>
       <div class="t-count">${cnt}<span style="font-size:11px;color:var(--muted);font-weight:400">/${activeDays}</span></div>`;
