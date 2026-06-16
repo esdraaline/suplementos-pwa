@@ -37,6 +37,7 @@ body {
   color: var(--text);
   min-height: 100dvh;
   overflow-x: hidden;
+  overscroll-behavior-y: contain;
 }
 
 /* ── NAV TABS ── */
@@ -54,6 +55,7 @@ body {
   font-size: 11px; color: var(--muted); font-weight: 500;
   letter-spacing: 0.02em; border: none; background: none;
   transition: color 0.15s;
+  user-select: none; -webkit-user-select: none;
 }
 .tab.active { color: var(--green); }
 .tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -103,6 +105,7 @@ body {
   padding: 14px 16px;
   border-bottom: 1px solid var(--border);
   cursor: pointer; transition: background 0.12s; position: relative;
+  user-select: none; -webkit-user-select: none;
 }
 .supp-item:last-child { border-bottom: none; }
 .supp-item:active { background: #F5F3F0; }
@@ -137,7 +140,7 @@ body {
 .calendar-wrap { padding: 0 20px 20px; }
 .month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .month-nav h2 { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; }
-.month-nav button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; display:flex; align-items:center; justify-content:center; font-size: 16px; }
+.month-nav button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; display:flex; align-items:center; justify-content:center; font-size: 16px; }
 .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; }
 .weekday { text-align: center; font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; padding: 4px 0; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
