@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#2D9E6A">
 <title>Suplementos</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -128,7 +128,7 @@ body {
 .supp-item:last-child { border-bottom: none; }
 .supp-item:active { background: #F5F3F0; }
 .supp-item.checked { background: #FAFAF8; }
-.supp-item.checked .supp-name { text-decoration: line-through; opacity: 0.45; }
+.supp-item.checked .supp-name { text-decoration: line-through; opacity: 0.45; color: var(--muted); }
 .check-circle {
   width: 24px; height: 24px; border-radius: 50%; flex-shrink:0;
   border: 2px solid var(--border); display: flex; align-items: center; justify-content: center;
@@ -137,7 +137,7 @@ body {
 .supp-item.checked .check-circle { background: var(--green); border-color: var(--green); }
 .check-circle svg { width: 13px; height: 13px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity 0.15s; }
 .supp-item.checked .check-circle svg { opacity: 1; }
-.supp-name { font-size: 16px; font-weight: 500; color: var(--text); flex: 1; }
+.supp-name { font-size: 16px; font-weight: 700; color: #1A3A5C; flex: 1; }
 
 /* ── CATEGORY CHIP & EMOJI ── */
 .emoji-badge {
