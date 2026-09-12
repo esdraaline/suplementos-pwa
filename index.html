@@ -126,6 +126,14 @@ body {
   cursor: pointer; transition: background 0.12s; position: relative;
   user-select: none; -webkit-user-select: none;
 }
+.supp-remove { margin-left: auto; padding: 0 6px; font-size: 18px; line-height: 1; color: #B8B3AA; cursor: pointer; }
+.supp-remove:hover { color: #E05A4A; }
+.supp-add { padding: 10px 14px; font-size: 13px; font-weight: 600; color: #8A857C; cursor: pointer; }
+.supp-add:hover { color: #E8730A; }
+.add-form { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px; align-items: center; }
+.add-form input, .add-form select { flex: 1 1 120px; min-width: 0; padding: 8px 10px; border: 1px solid #E5E1DA; border-radius: 10px; font-size: 14px; background: #fff; }
+.add-form button { padding: 8px 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #E8730A; color: #fff; }
+.add-form .add-cancel { background: #F0EDE8; color: #6B665E; }
 .supp-item:last-child { border-bottom: none; }
 .supp-item:active { background: #F5F3F0; }
 .supp-item.checked { background: #FAFAF8; }
@@ -367,31 +375,90 @@ body {
 </nav>
 
 <script>
+// Os itens NAO ficam no codigo: cada pessoa cadastra os seus na propria pagina,
+// e a lista vive so no localStorage deste navegador.
 const PERIODS = [
-  { id: "ao-acordar", label: "Ao acordar", items: ["Item 1"] },
-  { id: "almoco",    label: "Almoço",      items: ["Item 2","Item 3","Item 4","Item 9","Item 8"] },
-  { id: "tarde",     label: "Meio da tarde",items: ["Item 12","Item 11","Item 5","Item 6"] },
-  { id: "noite",     label: "Noite",        items: ["Item 7","Item 10"] }
+  { id: "ao-acordar", label: "Ao acordar",     items: [] },
+  { id: "almoco",     label: "Almoço",         items: [] },
+  { id: "tarde",      label: "Meio da tarde",  items: [] },
+  { id: "noite",      label: "Noite",          items: [] }
 ];
-const ALL_ITEMS = PERIODS.flatMap(p => p.items.map(name => ({ period: p.id, name })));
-const TOTAL = ALL_ITEMS.length;
+let ALL_ITEMS = [];
+let TOTAL = 0;
 const STORAGE_KEY = "supp_app_v2";
+const ITEMS_KEY = "supp_items_v1";
 const MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 const PERIOD_LABEL = { "ao-acordar":"Acordar","almoco":"Almoço","tarde":"Tarde","noite":"Noite" };
-const SUPP_META = {
-  "Item 1": { category: "Enzima", color: "#FF8C69", emoji: "🍍" },
-  "Item 2": { category: "Microbiota", color: "#7C5CBF", emoji: "🦠" },
-  "Item 3": { category: "Glicose", color: "#2ECC8E", emoji: "🌿" },
-  "Item 4": { category: "Digestão", color: "#5A9EF0", emoji: "💧" },
-  "Item 9": { category: "Energia", color: "#FFB347", emoji: "⚡" },
-  "Item 8": { category: "Cabelo", color: "#FF6B9D", emoji: "💇" },
-  "Item 12": { category: "Mineral", color: "#E05A4A", emoji: "🔴" },
-  "Item 11": { category: "Imunidade", color: "#F7C52B", emoji: "🍋" },
-  "Item 5": { category: "Imunidade", color: "#F7C52B", emoji: "🥛" },
-  "Item 6": { category: "Antioxid.", color: "#FF9500", emoji: "🥕" },
-  "Item 7": { category: "Colágeno", color: "#D4A0FF", emoji: "✨" },
-  "Item 10": { category: "Imunidade", color: "#F7C52B", emoji: "🛡️" }
+// Categorias genericas para escolher no cadastro (cor e emoji do item).
+const CATEGORIES = {
+  "Vitamina":   { color: "#F7C52B", emoji: "🍋" },
+  "Mineral":    { color: "#E05A4A", emoji: "🔴" },
+  "Enzima":     { color: "#FF8C69", emoji: "🍍" },
+  "Microbiota": { color: "#7C5CBF", emoji: "🦠" },
+  "Colágeno":   { color: "#D4A0FF", emoji: "✨" },
+  "Imunidade":  { color: "#F7C52B", emoji: "🛡️" },
+  "Energia":    { color: "#FFB347", emoji: "⚡" },
+  "Antioxid.":  { color: "#FF9500", emoji: "🥕" },
+  "Outro":      { color: "#8A857C", emoji: "💊" }
 };
+const SUPP_META = {};
+
+function loadItems() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(ITEMS_KEY)); } catch(e) {}
+  PERIODS.forEach(p => {
+    const list = (saved && Array.isArray(saved[p.id])) ? saved[p.id] : [];
+    p.items = list.map(it => typeof it === "string" ? it : it.name);
+    list.forEach(it => {
+      if (typeof it !== "string") SUPP_META[it.name] = Object.assign({ category: it.category || "Outro" }, CATEGORIES[it.category] || CATEGORIES["Outro"]);
+    });
+  });
+  ALL_ITEMS = PERIODS.flatMap(p => p.items.map(name => ({ period: p.id, name })));
+  TOTAL = ALL_ITEMS.length;
+}
+function saveItems() {
+  const out = {};
+  PERIODS.forEach(p => { out[p.id] = p.items.map(name => ({ name, category: (SUPP_META[name] || {}).category || "Outro" })); });
+  try { localStorage.setItem(ITEMS_KEY, JSON.stringify(out)); } catch(e) {}
+  loadItems();
+}
+function addItem(periodId, name, category) {
+  name = (name || "").trim();
+  if (!name) return;
+  const p = PERIODS.find(x => x.id === periodId);
+  if (!p || p.items.includes(name)) return;
+  p.items.push(name);
+  SUPP_META[name] = Object.assign({ category }, CATEGORIES[category] || CATEGORIES["Outro"]);
+  saveItems();
+  renderHoje();
+}
+function removeItem(periodId, name) {
+  if (!confirm(`Remover "${name}" da lista? O histórico de dias marcados continua guardado.`)) return;
+  const p = PERIODS.find(x => x.id === periodId);
+  if (!p) return;
+  p.items = p.items.filter(n => n !== name);
+  saveItems();
+  renderHoje();
+}
+function openAddForm(periodId) {
+  const list = document.getElementById(`list-${periodId}`);
+  if (list.querySelector(".add-form")) return;
+  const form = document.createElement("div");
+  form.className = "add-form";
+  form.innerHTML = `
+    <input type="text" class="add-name" placeholder="Nome do suplemento" maxlength="40" autocomplete="off">
+    <select class="add-cat">${Object.keys(CATEGORIES).map(c => `<option>${c}</option>`).join("")}</select>
+    <button type="button" class="add-ok">OK</button>
+    <button type="button" class="add-cancel">✕</button>
+  `;
+  const input = form.querySelector(".add-name");
+  const submit = () => addItem(periodId, input.value, form.querySelector(".add-cat").value);
+  form.querySelector(".add-ok").onclick = submit;
+  input.onkeydown = e => { if (e.key === "Enter") submit(); };
+  form.querySelector(".add-cancel").onclick = () => form.remove();
+  list.appendChild(form);
+  input.focus();
+}
 
 function todayStr() {
   const d = new Date();
@@ -405,6 +472,7 @@ function loadData() {
 function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
 
 let DB = loadData();
+loadItems();
 let calViewYear = new Date().getFullYear();
 let calViewMonth = new Date().getMonth();
 
@@ -471,7 +539,7 @@ function calcStreak() {
     ALL_ITEMS.forEach(i => {
       if (rec[itemKey(i.period, i.name)]) { dayPills++; }
     });
-    if (dayPills === TOTAL) { streak++; }
+    if (TOTAL && dayPills === TOTAL) { streak++; }
     else streak = 0;
   }
   return streak;
@@ -531,11 +599,22 @@ function renderHoje() {
         <span class="category-chip" style="background: ${meta.color}2e; color: ${meta.color};">${meta.category}</span>
       `;
       el.onclick = () => toggleItem(today, k);
+      const rm = document.createElement("span");
+      rm.className = "supp-remove";
+      rm.title = "Remover da lista";
+      rm.textContent = "×";
+      rm.onclick = e => { e.stopPropagation(); removeItem(p.id, name); };
+      el.appendChild(rm);
       list.appendChild(el);
     });
+    const add = document.createElement("div");
+    add.className = "supp-add";
+    add.textContent = p.items.length ? "+ Adicionar" : "+ Adicionar o primeiro suplemento";
+    add.onclick = () => openAddForm(p.id);
+    list.appendChild(add);
   });
 
-  const pct = Math.round(done / TOTAL * 100);
+  const pct = TOTAL ? Math.round(done / TOTAL * 100) : 0;
   const circ = 238.76;
   document.getElementById("ring-pct").textContent = pct + "%";
   
@@ -620,7 +699,7 @@ function renderCal() {
       const checked = ALL_ITEMS.filter(i => !!rec[itemKey(i.period, i.name)]).length;
       let cls = "cal-day";
       if (ds === today) cls += " today";
-      if (checked === TOTAL) cls += " complete";
+      if (TOTAL && checked === TOTAL) cls += " complete";
       else if (checked > 0) cls += " partial";
       else if (ds < today && anyChecked) cls += " missed";
       el.className = cls;
@@ -670,7 +749,7 @@ function renderStats() {
       if (rec[itemKey(i.period, i.name)]) { dayPills++; countMap[i.name]++; }
     });
     totalPills += dayPills;
-    if (dayPills === TOTAL) { daysComplete++; }
+    if (TOTAL && dayPills === TOTAL) { daysComplete++; }
   }
   const streak = calcStreak();
   const activeDays = todayN - startDay + 1;
