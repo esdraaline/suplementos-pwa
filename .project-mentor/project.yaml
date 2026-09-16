@@ -1,0 +1,35 @@
+# Gerado pelo Mentor de Projetos. Não edite à mão: use `mentor update|action|blocker|stage|close`.
+schema_version: 1
+project:
+  id: 666b15cd-f3fb-4b25-982c-717b3872e4ce
+  slug: suplementos-pwa
+  name: Suplementos
+  summary: PWA pessoal de acompanhamento diário de suplementos, com sequência de dias e estatísticas por categoria.
+  category: pessoal
+  sensitivity: normal
+  repo_url: https://github.com/esdraaline/suplementos-pwa.git
+  status_docs:
+    - README.md
+status:
+  lifecycle: maintenance
+  health: unknown
+  phase: null
+  priority: null
+  updated_at: 2026-09-16T06:58:40-03:00
+  last_session_at: null
+  confidence: inferred
+focus:
+  objective: null
+  current: null
+  last_completed: null
+  recommended_next_action: null
+next_actions: []
+blockers: []
+decisions_recent: []
+milestones: []
+review:
+  stale_after_days: null
+  snooze_until: null
+integration:
+  managed_by: mentor-de-projetos
+  protocol_version: 1
